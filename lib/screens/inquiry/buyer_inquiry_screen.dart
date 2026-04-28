@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../providers/car_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/utils/custom_msg.dart';
 
 class BuyerInquiryScreen extends StatefulWidget {
   const BuyerInquiryScreen({super.key});
@@ -60,20 +61,18 @@ class _BuyerInquiryScreenState extends State<BuyerInquiryScreen> {
       });
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Inquiry submitted successfully!'),
-            backgroundColor: AppColors.success,
-          ),
+        showCustomMsg(
+          context: context,
+          msg: 'Inquiry submitted successfully!',
+          bgColor: AppColors.success,
         );
         _subjectController.clear();
         _messageController.clear();
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(carProvider.error ?? 'Failed to submit inquiry'),
-            backgroundColor: AppColors.error,
-          ),
+        showCustomMsg(
+          context: context,
+          msg: carProvider.error ?? 'Failed to submit inquiry',
+          bgColor: AppColors.error,
         );
       }
     }
@@ -88,10 +87,11 @@ class _BuyerInquiryScreenState extends State<BuyerInquiryScreen> {
       appBar: AppBar(
         title: const Text('Send Inquiry',
             style: TextStyle(
-                color: AppColors.backgroundDark, fontWeight: FontWeight.bold)),
+                color: AppColors.backgroundDark,
+                fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.white,
         elevation: 0,
-        automaticallyImplyLeading: false, 
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -110,18 +110,35 @@ class _BuyerInquiryScreenState extends State<BuyerInquiryScreen> {
                 style: TextStyle(fontSize: 14, color: AppColors.grey),
               ),
               const SizedBox(height: 30),
-              
-              _buildTextField('Full Name', 'John Doe', _nameController, icon: Icons.person_outline),
+              _InquiryField(
+                label: 'Full Name',
+                hint: 'John Doe',
+                controller: _nameController,
+                icon: Icons.person_outline,
+              ),
               const SizedBox(height: 20),
-              
-              _buildTextField('Email Address', 'name@example.com', _emailController, icon: Icons.email_outlined, isEmail: true),
+              _InquiryField(
+                label: 'Email Address',
+                hint: 'name@example.com',
+                controller: _emailController,
+                icon: Icons.email_outlined,
+                isEmail: true,
+              ),
               const SizedBox(height: 20),
-              
-              _buildTextField('Subject / Vehicle Interest', 'e.g. Inquiry about Toyota Corolla 2022', _subjectController, icon: Icons.title_outlined),
+              _InquiryField(
+                label: 'Subject / Vehicle Interest',
+                hint: 'e.g. Inquiry about Toyota Corolla 2022',
+                controller: _subjectController,
+                icon: Icons.title_outlined,
+              ),
               const SizedBox(height: 20),
-              
-              _buildTextField('Message', 'Write your message here...', _messageController, maxLines: 5, icon: Icons.message_outlined),
-              
+              _InquiryField(
+                label: 'Message',
+                hint: 'Write your message here...',
+                controller: _messageController,
+                maxLines: 5,
+                icon: Icons.message_outlined,
+              ),
               const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
@@ -133,10 +150,15 @@ class _BuyerInquiryScreenState extends State<BuyerInquiryScreen> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                   ),
-                  child: carProvider.isLoading 
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Submit Inquiry',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: carProvider.isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                      : const Text('Submit Inquiry',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -146,19 +168,43 @@ class _BuyerInquiryScreenState extends State<BuyerInquiryScreen> {
       ),
     );
   }
+}
 
-  Widget _buildTextField(String label, String hint, TextEditingController controller, {int maxLines = 1, IconData? icon, bool isEmail = false}) {
+class _InquiryField extends StatelessWidget {
+  final String label;
+  final String hint;
+  final TextEditingController controller;
+  final int maxLines;
+  final IconData? icon;
+  final bool isEmail;
+
+  const _InquiryField({
+    required this.label,
+    required this.hint,
+    required this.controller,
+    this.maxLines = 1,
+    this.icon,
+    this.isEmail = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.backgroundDark)),
+        Text(label,
+            style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: AppColors.backgroundDark)),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           maxLines: maxLines,
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: icon != null ? Icon(icon, color: AppColors.grey, size: 20) : null,
+            prefixIcon: icon != null
+                ? Icon(icon, color: AppColors.grey, size: 20)
+                : null,
             filled: true,
             fillColor: AppColors.white,
             border: OutlineInputBorder(
@@ -172,7 +218,8 @@ class _BuyerInquiryScreenState extends State<BuyerInquiryScreen> {
               return 'This field is required';
             }
             if (isEmail) {
-              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              final emailRegex =
+                  RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
               if (!emailRegex.hasMatch(value)) {
                 return 'Please enter a valid email';
               }

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_data.dart';
 import '../../providers/car_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/car_card.dart';
 import '../../routes/app_routes.dart';
+import '../../widgets/filter_dropdown.dart';
+import '../../core/utils/custom_msg.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -15,16 +18,11 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final _searchController = TextEditingController();
-  
-  // Filter States
+
   String? _selectedCompany;
   String? _selectedFuelType;
   String? _selectedTransmission;
   RangeValues _priceRange = const RangeValues(0, 500000);
-  
-  final List<String> _companies = ['All', 'Toyota', 'Honda', 'Tesla', 'BMW', 'Mercedes', 'Audi', 'Ford', 'Nissan', 'Hyundai'];
-  final List<String> _fuelTypes = ['All', 'petrol', 'diesel', 'electric', 'hybrid'];
-  final List<String> _transmissions = ['All', 'automatic', 'manual'];
 
   @override
   void initState() {
@@ -44,27 +42,29 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _applyFilters() {
     final Map<String, String> filters = {};
-    
+
     if (_searchController.text.isNotEmpty) {
       filters['search'] = _searchController.text;
     }
-    
+
     if (_selectedCompany != null && _selectedCompany != 'All') {
       filters['company'] = _selectedCompany!;
     }
-    
+
     if (_selectedFuelType != null && _selectedFuelType != 'All') {
       filters['fuelType'] = _selectedFuelType!;
     }
-    
-    if (_selectedTransmission != null && _selectedTransmission != 'All') {
+
+    if (_selectedTransmission != null &&
+        _selectedTransmission != 'All') {
       filters['transmission'] = _selectedTransmission!;
     }
-    
+
     filters['minPrice'] = _priceRange.start.round().toString();
     filters['maxPrice'] = _priceRange.end.round().toString();
 
-    Provider.of<CarProvider>(context, listen: false).fetchListings(filters: filters);
+    Provider.of<CarProvider>(context, listen: false)
+        .fetchListings(filters: filters);
   }
 
   void _showFilterSheet() {
@@ -78,7 +78,8 @@ class _SearchScreenState extends State<SearchScreen> {
             height: MediaQuery.of(context).size.height * 0.75,
             decoration: const BoxDecoration(
               color: AppColors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              borderRadius:
+                  BorderRadius.vertical(top: Radius.circular(30)),
             ),
             padding: const EdgeInsets.all(25),
             child: Column(
@@ -89,7 +90,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   children: [
                     const Text(
                       'Filters',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.backgroundDark),
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.backgroundDark),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close),
@@ -98,9 +102,9 @@ class _SearchScreenState extends State<SearchScreen> {
                   ],
                 ),
                 const SizedBox(height: 25),
-                
-                // Price Range
-                const Text('Price Range', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const Text('Price Range',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 10),
                 RangeSlider(
                   values: _priceRange,
@@ -121,50 +125,43 @@ class _SearchScreenState extends State<SearchScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('\$${_priceRange.start.round()}', style: const TextStyle(color: AppColors.grey)),
-                    Text('\$${_priceRange.end.round()}', style: const TextStyle(color: AppColors.grey)),
+                    Text('\$${_priceRange.start.round()}',
+                        style: const TextStyle(color: AppColors.grey)),
+                    Text('\$${_priceRange.end.round()}',
+                        style: const TextStyle(color: AppColors.grey)),
                   ],
                 ),
                 const SizedBox(height: 25),
-
-                // Company Dropdown
-                _buildFilterDropdown(
+                FilterDropdown(
                   label: 'Brand / Company',
                   value: _selectedCompany,
-                  items: _companies,
+                  items: AppData.carBrands,
                   onChanged: (val) {
                     setModalState(() => _selectedCompany = val);
                     setState(() {});
                   },
                 ),
                 const SizedBox(height: 20),
-
-                // Fuel Type
-                _buildFilterDropdown(
+                FilterDropdown(
                   label: 'Fuel Type',
                   value: _selectedFuelType,
-                  items: _fuelTypes,
+                  items: AppData.fuelTypes,
                   onChanged: (val) {
                     setModalState(() => _selectedFuelType = val);
                     setState(() {});
                   },
                 ),
                 const SizedBox(height: 20),
-
-                // Transmission
-                _buildFilterDropdown(
+                FilterDropdown(
                   label: 'Transmission',
                   value: _selectedTransmission,
-                  items: _transmissions,
+                  items: AppData.transmissions,
                   onChanged: (val) {
                     setModalState(() => _selectedTransmission = val);
                     setState(() {});
                   },
                 ),
-
                 const Spacer(),
-                
-                // Action Buttons
                 Row(
                   children: [
                     Expanded(
@@ -174,17 +171,23 @@ class _SearchScreenState extends State<SearchScreen> {
                             _selectedCompany = null;
                             _selectedFuelType = null;
                             _selectedTransmission = null;
-                            _priceRange = const RangeValues(0, 500000);
+                            _priceRange =
+                                const RangeValues(0, 500000);
                           });
                           setState(() {});
                           _applyFilters();
                         },
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          side: const BorderSide(color: AppColors.primary),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 15),
+                          side: const BorderSide(
+                              color: AppColors.primary),
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(15)),
                         ),
-                        child: const Text('Reset', style: TextStyle(color: AppColors.primary)),
+                        child: const Text('Reset',
+                            style: TextStyle(color: AppColors.primary)),
                       ),
                     ),
                     const SizedBox(width: 15),
@@ -195,8 +198,11 @@ class _SearchScreenState extends State<SearchScreen> {
                           Navigator.pop(context);
                         },
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(15)),
                         ),
                         child: const Text('Apply Filters'),
                       ),
@@ -212,57 +218,27 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildFilterDropdown({
-    required String label,
-    required String? value,
-    required List<String> items,
-    required Function(String?) onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15),
-          decoration: BoxDecoration(
-            color: AppColors.backgroundLight,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.lightGrey),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value ?? items[0],
-              isExpanded: true,
-              items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
-              onChanged: onChanged,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('Explore', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Explore',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.white,
         elevation: 0,
         centerTitle: true,
       ),
       body: Column(
         children: [
-          // Search Bar & Filter Icon
           Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 15),
                     decoration: BoxDecoration(
                       color: AppColors.white,
                       borderRadius: BorderRadius.circular(15),
@@ -279,7 +255,8 @@ class _SearchScreenState extends State<SearchScreen> {
                       decoration: const InputDecoration(
                         hintText: 'Search brand, model...',
                         border: InputBorder.none,
-                        icon: Icon(Icons.search, color: AppColors.primary),
+                        icon: Icon(Icons.search,
+                            color: AppColors.primary),
                       ),
                     ),
                   ),
@@ -306,13 +283,12 @@ class _SearchScreenState extends State<SearchScreen> {
               ],
             ),
           ),
-
-          // Results
           Expanded(
             child: Consumer<CarProvider>(
               builder: (context, carProvider, _) {
                 if (carProvider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                      child: CircularProgressIndicator());
                 }
 
                 if (carProvider.listings.isEmpty) {
@@ -320,9 +296,13 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.search_off_rounded, size: 80, color: AppColors.grey.withOpacity(0.5)),
+                        Icon(Icons.search_off_rounded,
+                            size: 80,
+                            color: AppColors.grey.withOpacity(0.5)),
                         const SizedBox(height: 20),
-                        const Text('No cars match your filters', style: TextStyle(color: AppColors.grey, fontSize: 16)),
+                        const Text('No cars match your filters',
+                            style: TextStyle(
+                                color: AppColors.grey, fontSize: 16)),
                         TextButton(
                           onPressed: () {
                             setState(() {
@@ -348,26 +328,30 @@ class _SearchScreenState extends State<SearchScreen> {
                     itemCount: carProvider.listings.length,
                     itemBuilder: (context, index) {
                       final listing = carProvider.listings[index];
-                      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                      final authProvider = Provider.of<AuthProvider>(
+                          context,
+                          listen: false);
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 15),
                         child: CarCard(
                           listing: listing,
-                          isFavorite: carProvider.isFavorite(listing.id),
+                          isFavorite:
+                              carProvider.isFavorite(listing.id),
                           onTap: () {
                             Navigator.pushNamed(
-                              context, 
-                              AppRoutes.details, 
+                              context,
+                              AppRoutes.details,
                               arguments: listing,
                             );
                           },
                           onFavoriteTap: () {
                             if (authProvider.isLoggedIn) {
-                              carProvider.toggleFavorite(listing.id, authProvider.user!.token!);
+                              carProvider.toggleFavorite(listing.id,
+                                  authProvider.user!.token!);
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please login to add to favorites')),
-                              );
+                              showCustomMsg(
+                                  context: context,
+                                  msg: 'Please login to add to favorites');
                             }
                           },
                         ),

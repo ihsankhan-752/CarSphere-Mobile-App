@@ -1,22 +1,22 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
+import '../../core/constants/api_config.dart';
 
 class AuthService {
-  static const String userBaseUrl = 'http://10.0.2.2:8000/user';
-  static const String sellerBaseUrl = 'http://10.0.2.2:8000/seller';
-
   Future<UserModel> signUp(Map<String, dynamic> data, String role) async {
     final url = role == 'seller'
-        ? '$sellerBaseUrl/signup'
-        : '$userBaseUrl/signup';
+        ? '${ApiConfig.sellerBase}/signup'
+        : '${ApiConfig.userBase}/signup';
 
     try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(data),
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(data),
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
@@ -41,23 +41,22 @@ class AuthService {
     String role,
   ) async {
     final url = role == 'seller'
-        ? '$sellerBaseUrl/login'
-        : '$userBaseUrl/login';
+        ? '${ApiConfig.sellerBase}/login'
+        : '${ApiConfig.userBase}/login';
 
     try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'email': email, 'password': password}),
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
         if (role == 'seller') {
-          return {
-            'token': decoded['token'],
-            'user': decoded['seller'],
-          };
+          return {'token': decoded['token'], 'user': decoded['seller']};
         }
         return decoded;
       } else {
@@ -75,17 +74,18 @@ class AuthService {
   }
 
   Future<UserModel> getCurrentUser(String token, String role) async {
-    final baseUrl = role == 'seller' ? sellerBaseUrl : userBaseUrl;
-    print('DEBUG: Fetching current $role info from $baseUrl/me...');
+    final baseUrl =
+        role == 'seller' ? ApiConfig.sellerBase : ApiConfig.userBase;
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/me'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(const Duration(seconds: 7));
-      print('DEBUG: getCurrentUser response: ${response.statusCode}');
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/me'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(const Duration(seconds: 7));
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
@@ -94,7 +94,6 @@ class AuthService {
         throw Exception('Failed to fetch user information');
       }
     } catch (e) {
-      print('DEBUG: Error in getCurrentUser: $e');
       throw Exception('Failed to fetch user information');
     }
   }

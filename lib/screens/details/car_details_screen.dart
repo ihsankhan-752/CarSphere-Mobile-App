@@ -6,6 +6,8 @@ import '../../core/constants/app_colors.dart';
 import '../../data/models/listing_model.dart';
 import '../../providers/car_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/spec_item_card.dart';
+import '../../core/utils/custom_msg.dart';
 
 class CarDetailsScreen extends StatefulWidget {
   final ListingModel listing;
@@ -17,8 +19,7 @@ class CarDetailsScreen extends StatefulWidget {
 }
 
 class _CarDetailsScreenState extends State<CarDetailsScreen> {
-  // Placeholder for seller phone
-  final String _sellerPhone = "+923001234567"; 
+  final String _sellerPhone = "+923001234567";
 
   Future<void> _makeCall() async {
     final Uri launchUri = Uri(
@@ -31,32 +32,35 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
   }
 
   Future<void> _openWhatsApp() async {
-    final String message = "Hi, I am interested in your ${widget.listing.fullName} listed on CarSphere.";
-    final Uri whatsappUri = Uri.parse("https://wa.me/$_sellerPhone?text=${Uri.encodeComponent(message)}");
-    
+    final String message =
+        "Hi, I am interested in your ${widget.listing.fullName} listed on CarSphere.";
+    final Uri whatsappUri = Uri.parse(
+        "https://wa.me/$_sellerPhone?text=${Uri.encodeComponent(message)}");
+
     if (await canLaunchUrl(whatsappUri)) {
       await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
     }
   }
 
   void _shareListing() {
-    final String shareText = "Check out this ${widget.listing.fullName} on CarSphere!\n\n"
+    final String shareText =
+        "Check out this ${widget.listing.fullName} on CarSphere!\n\n"
         "Price: ${widget.listing.formattedPrice}\n"
         "Mileage: ${widget.listing.mileage} km\n"
         "Condition: ${widget.listing.status}\n\n"
         "Download CarSphere to see more!";
-    
-    Share.share(shareText, subject: "Car Listing: ${widget.listing.fullName}");
+
+    Share.share(shareText,
+        subject: "Car Listing: ${widget.listing.fullName}");
   }
 
   @override
   Widget build(BuildContext context) {
-    // We listen to CarProvider to ensure the favorite icon updates immediately
     final carProvider = Provider.of<CarProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
+
     final bool isFav = carProvider.isFavorite(widget.listing.id);
-    
+
     return Scaffold(
       backgroundColor: AppColors.white,
       body: CustomScrollView(
@@ -77,28 +81,30 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
                     )
                   : Container(
                       color: AppColors.lightGrey,
-                      child: const Icon(Icons.image_not_supported_outlined, size: 80, color: AppColors.grey),
+                      child: const Icon(Icons.image_not_supported_outlined,
+                          size: 80, color: AppColors.grey),
                     ),
             ),
             actions: [
               IconButton(
                 onPressed: () {
                   if (authProvider.isLoggedIn) {
-                    carProvider.toggleFavorite(widget.listing.id, authProvider.user!.token!);
+                    carProvider.toggleFavorite(
+                        widget.listing.id, authProvider.user!.token!);
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please login to add to favorites')),
-                    );
+                    showCustomMsg(
+                          context: context,
+                          msg: 'Please login to add to favorites');
                   }
                 },
                 icon: Icon(
-                  isFav ? Icons.favorite : Icons.favorite_border, 
-                  color: isFav ? Colors.red : AppColors.white
-                ),
+                    isFav ? Icons.favorite : Icons.favorite_border,
+                    color: isFav ? Colors.red : AppColors.white),
               ),
               IconButton(
                 onPressed: _shareListing,
-                icon: const Icon(Icons.share_outlined, color: AppColors.white),
+                icon: const Icon(Icons.share_outlined,
+                    color: AppColors.white),
               ),
             ],
           ),
@@ -117,64 +123,92 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
                           children: [
                             Text(
                               widget.listing.company,
-                              style: const TextStyle(fontSize: 16, color: AppColors.grey),
+                              style: const TextStyle(
+                                  fontSize: 16, color: AppColors.grey),
                             ),
                             Text(
                               widget.listing.model,
-                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.backgroundDark),
+                              style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.backgroundDark),
                             ),
                           ],
                         ),
                       ),
                       Text(
                         widget.listing.formattedPrice,
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
+                        style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary),
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       widget.listing.status.toUpperCase(),
-                      style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                   const SizedBox(height: 25),
                   const Text(
                     'Car Specifications',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 15),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildSpecItem(Icons.speed, 'Mileage', '${widget.listing.mileage} km'),
+                        SpecItemCard(
+                            icon: Icons.speed,
+                            label: 'Mileage',
+                            value: '${widget.listing.mileage} km'),
                         const SizedBox(width: 15),
-                        _buildSpecItem(Icons.settings, 'Type', widget.listing.transmission),
+                        SpecItemCard(
+                            icon: Icons.settings,
+                            label: 'Type',
+                            value: widget.listing.transmission),
                         const SizedBox(width: 15),
-                        _buildSpecItem(Icons.local_gas_station, 'Fuel', widget.listing.fuelType),
+                        SpecItemCard(
+                            icon: Icons.local_gas_station,
+                            label: 'Fuel',
+                            value: widget.listing.fuelType),
                         const SizedBox(width: 15),
-                        _buildSpecItem(Icons.palette, 'Color', widget.listing.color),
+                        SpecItemCard(
+                            icon: Icons.palette,
+                            label: 'Color',
+                            value: widget.listing.color),
                       ],
                     ),
                   ),
                   const SizedBox(height: 25),
                   const Text(
                     'Description',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   Text(
                     widget.listing.description,
-                    style: const TextStyle(fontSize: 16, color: AppColors.grey, height: 1.5),
+                    style: const TextStyle(
+                        fontSize: 16,
+                        color: AppColors.grey,
+                        height: 1.5),
                   ),
-                  const SizedBox(height: 100), 
+                  const SizedBox(height: 100),
                 ],
               ),
             ),
@@ -196,29 +230,6 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
             onPressed: _makeCall,
             backgroundColor: Colors.blue,
             child: const Icon(Icons.call, color: Colors.white),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSpecItem(IconData icon, String label, String value) {
-    return Container(
-      width: 100,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: AppColors.primary, size: 24),
-          const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 12, color: AppColors.grey)),
-          Text(
-            value, 
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.backgroundDark),
-            textAlign: TextAlign.center,
           ),
         ],
       ),

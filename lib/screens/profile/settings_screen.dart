@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../widgets/setting_tile.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -17,11 +18,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('Settings', style: TextStyle(color: AppColors.backgroundDark, fontWeight: FontWeight.bold)),
+        title: const Text('Settings',
+            style: TextStyle(
+                color: AppColors.backgroundDark, fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.backgroundDark),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: AppColors.backgroundDark),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -30,20 +34,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('App Settings', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('App Settings',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
-            _buildSettingTile(
-              Icons.notifications_outlined,
-              'Notifications',
+            SettingTile(
+              icon: Icons.notifications_outlined,
+              title: 'Notifications',
               trailing: Switch(
                 value: _notificationsEnabled,
-                onChanged: (val) => setState(() => _notificationsEnabled = val),
+                onChanged: (val) =>
+                    setState(() => _notificationsEnabled = val),
                 activeColor: AppColors.primary,
               ),
             ),
-            _buildSettingTile(
-              Icons.dark_mode_outlined,
-              'Dark Mode',
+            SettingTile(
+              icon: Icons.dark_mode_outlined,
+              title: 'Dark Mode',
               trailing: Switch(
                 value: _darkModeEnabled,
                 onChanged: (val) => setState(() => _darkModeEnabled = val),
@@ -51,40 +57,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             const SizedBox(height: 30),
-            const Text('Account', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('Account',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
-            _buildSettingTile(Icons.person_outline, 'Edit Profile', onTap: () {}),
-            _buildSettingTile(Icons.security_outlined, 'Privacy & Security', onTap: () {}),
-            _buildSettingTile(Icons.language_outlined, 'Language', trailing: const Text('English', style: TextStyle(color: AppColors.grey))),
+            SettingTile(
+                icon: Icons.person_outline,
+                title: 'Edit Profile',
+                onTap: () {}),
+            SettingTile(
+                icon: Icons.security_outlined,
+                title: 'Privacy & Security',
+                onTap: () {}),
+            const SettingTile(
+                icon: Icons.language_outlined,
+                title: 'Language',
+                trailing: Text('English',
+                    style: TextStyle(color: AppColors.grey))),
             const SizedBox(height: 30),
-            const Text('Legal', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('Legal',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
-            _buildSettingTile(Icons.info_outline_rounded, 'Terms of Service', onTap: () {}),
-            _buildSettingTile(Icons.privacy_tip_outlined, 'Privacy Policy', onTap: () {}),
+            SettingTile(
+                icon: Icons.info_outline_rounded,
+                title: 'Terms of Service',
+                onTap: () {}),
+            SettingTile(
+                icon: Icons.privacy_tip_outlined,
+                title: 'Privacy Policy',
+                onTap: () {}),
             const SizedBox(height: 50),
-            _buildSettingTile(
-              Icons.delete_outline_rounded,
-              'Delete Account',
+            SettingTile(
+              icon: Icons.delete_outline_rounded,
+              title: 'Delete Account',
               onTap: () {},
               color: AppColors.error,
               showTrailing: false,
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSettingTile(IconData icon, String title, {Widget? trailing, VoidCallback? onTap, Color? color, bool showTrailing = true}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      child: ListTile(
-        onTap: onTap,
-        tileColor: AppColors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        leading: Icon(icon, color: color ?? AppColors.primary),
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.w600, color: color)),
-        trailing: trailing ?? (showTrailing ? const Icon(Icons.chevron_right_rounded, color: AppColors.grey) : null),
       ),
     );
   }

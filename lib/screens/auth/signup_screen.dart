@@ -132,16 +132,6 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 40),
               Consumer<AuthProvider>(
                 builder: (context, auth, _) {
-                  if (auth.error != null) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      showCustomMsg(
-                        context: context,
-                        msg: auth.error!,
-                        bgColor: Colors.red,
-                      );
-                    });
-                  }
-
                   return PrimaryButton(
                     title: auth.isLoading ? "Please Wait..." : "Sign Up",
                     onPressed: auth.isLoading
@@ -166,6 +156,14 @@ class _SignupScreenState extends State<SignupScreen> {
                                 );
 
                                 Navigator.pop(context); // Go back to login
+                              } else {
+                                if (auth.error != null) {
+                                  showCustomMsg(
+                                    context: context,
+                                    msg: auth.error!,
+                                    bgColor: Colors.red,
+                                  );
+                                }
                               }
                             }
                           },

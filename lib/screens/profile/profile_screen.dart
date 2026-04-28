@@ -4,6 +4,7 @@ import '../../core/constants/app_colors.dart';
 import '../../routes/app_routes.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/car_provider.dart';
+import '../../core/utils/custom_msg.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -19,7 +20,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final carProvider = Provider.of<CarProvider>(context, listen: false);
-      if (authProvider.user?.role == 'seller' && authProvider.user?.userId != null) {
+      if (authProvider.user?.role == 'seller' &&
+          authProvider.user?.userId != null) {
         carProvider.fetchMyListings(authProvider.user!.userId!);
       }
     });
@@ -31,11 +33,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context, authProvider, carProvider, _) {
         final user = authProvider.user;
         final isSeller = user?.role == 'seller';
-        
-        // Calculate seller stats from myListings
+
         final totalListings = carProvider.myListings.length;
-        final activeListings = carProvider.myListings.where((l) => l.status == 'active').length;
-        final soldListings = carProvider.myListings.where((l) => l.status == 'sold').length;
+        final activeListings = carProvider.myListings
+            .where((l) => l.status == 'active')
+            .length;
+        final soldListings = carProvider.myListings
+            .where((l) => l.status == 'sold')
+            .length;
 
         return Scaffold(
           backgroundColor: AppColors.backgroundLight,
@@ -44,18 +49,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (isSeller && user?.userId != null) {
                 await carProvider.fetchMyListings(user!.userId!);
               }
-              await authProvider.init(); // Refresh user info too
+              await authProvider.init();
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 children: [
-                  // Profile Header
                   Container(
                     padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
                     decoration: const BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+                      borderRadius:
+                          BorderRadius.vertical(bottom: Radius.circular(30)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black12,
@@ -69,61 +74,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const CircleAvatar(
                           radius: 50,
                           backgroundColor: AppColors.primary,
-                          child: Icon(Icons.person, size: 60, color: AppColors.white),
+                          child: Icon(Icons.person,
+                              size: 60, color: AppColors.white),
                         ),
                         const SizedBox(height: 15),
                         Text(
                           user?.username ?? 'Guest User',
-                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.bold),
                         ),
                         Text(
                           user?.email ?? 'Sign in to explore more',
                           style: const TextStyle(color: AppColors.grey),
                         ),
-                        
                         if (user != null) ...[
                           const SizedBox(height: 5),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 4),
                             decoration: BoxDecoration(
                               color: AppColors.primary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
                               user.role.toUpperCase(),
-                              style: const TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
-
                         const SizedBox(height: 30),
-                        
-                        // Stats Row - ONLY FOR SELLERS
                         if (isSeller)
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              _buildStatItem('Total', totalListings.toString()),
-                              _buildStatItem('Active', activeListings.toString()),
-                              _buildStatItem('Sold', soldListings.toString()),
+                              _ProfileStatItem(
+                                  label: 'Total',
+                                  value: totalListings.toString()),
+                              _ProfileStatItem(
+                                  label: 'Active',
+                                  value: activeListings.toString()),
+                              _ProfileStatItem(
+                                  label: 'Sold', value: soldListings.toString()),
                             ],
                           )
                         else if (user != null)
-                          // For Buyers, show account info summary
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              _buildInfoItem(Icons.phone_outlined, user.phone),
-                              _buildInfoItem(Icons.location_on_outlined, user.city),
+                              _ProfileInfoItem(
+                                  icon: Icons.phone_outlined, value: user.phone),
+                              _ProfileInfoItem(
+                                  icon: Icons.location_on_outlined,
+                                  value: user.city),
                             ],
                           ),
                       ],
                     ),
                   ),
-                  
                   const SizedBox(height: 25),
-                  
-                  // Menu Items
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
@@ -131,36 +142,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         const Text(
                           'Account Management',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.grey),
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.grey),
                         ),
                         const SizedBox(height: 15),
-                        
                         if (isSeller) ...[
-                          _buildMenuItem(Icons.add_circle_outline, 'Add New Listing', () {
-                             Navigator.pushNamed(context, AppRoutes.post);
-                          }),
-                          _buildMenuItem(Icons.list_alt_rounded, 'Manage My Listings', () {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Coming soon: Listing Management View')));
-                          }),
+                          _ProfileMenuItem(
+                              icon: Icons.add_circle_outline,
+                              title: 'Add New Listing',
+                              onTap: () {
+                                Navigator.pushNamed(context, AppRoutes.post);
+                              }),
+                          _ProfileMenuItem(
+                              icon: Icons.list_alt_rounded,
+                              title: 'Manage My Listings',
+                              onTap: () {
+                                showCustomMsg(
+                                    context: context,
+                                    msg: 'Coming soon: Listing Management View');
+                              }),
                         ],
-                        
-                        _buildMenuItem(Icons.favorite_outline_rounded, 'My Favorites', () {
-                          Navigator.pushNamed(context, AppRoutes.favorites);
-                        }),
-                        
-                        _buildMenuItem(Icons.settings_outlined, 'Settings', () {
-                          Navigator.pushNamed(context, AppRoutes.settings);
-                        }),
-                        
-                        _buildMenuItem(Icons.help_outline_rounded, 'Help & Support', () {}),
-                        
+                        _ProfileMenuItem(
+                            icon: Icons.favorite_outline_rounded,
+                            title: 'My Favorites',
+                            onTap: () {
+                              Navigator.pushNamed(
+                                  context, AppRoutes.favorites);
+                            }),
+                        _ProfileMenuItem(
+                            icon: Icons.settings_outlined,
+                            title: 'Settings',
+                            onTap: () {
+                              Navigator.pushNamed(context, AppRoutes.settings);
+                            }),
+                        _ProfileMenuItem(
+                            icon: Icons.help_outline_rounded,
+                            title: 'Help & Support',
+                            onTap: () {}),
                         const SizedBox(height: 20),
-                        _buildMenuItem(Icons.logout_rounded, 'Logout', () async {
-                          await authProvider.logout();
-                          if (context.mounted) {
-                            Navigator.pushReplacementNamed(context, AppRoutes.login);
-                          }
-                        }, color: AppColors.error),
+                        _ProfileMenuItem(
+                            icon: Icons.logout_rounded,
+                            title: 'Logout',
+                            color: AppColors.error,
+                            onTap: () async {
+                              await authProvider.logout();
+                              if (context.mounted) {
+                                Navigator.pushReplacementNamed(
+                                    context, AppRoutes.login);
+                              }
+                            }),
                       ],
                     ),
                   ),
@@ -173,28 +205,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
     );
   }
+}
 
-  Widget _buildStatItem(String label, String value) {
+class _ProfileStatItem extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ProfileStatItem({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+        Text(value,
+            style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary)),
         const SizedBox(height: 5),
         Text(label, style: const TextStyle(color: AppColors.grey, fontSize: 13)),
       ],
     );
   }
+}
 
-  Widget _buildInfoItem(IconData icon, String value) {
+class _ProfileInfoItem extends StatelessWidget {
+  final IconData icon;
+  final String value;
+
+  const _ProfileInfoItem({required this.icon, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
         Icon(icon, size: 18, color: AppColors.primary),
         const SizedBox(width: 8),
-        Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        Text(value,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
       ],
     );
   }
+}
 
-  Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap, {Color? color}) {
+class _ProfileMenuItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+  final Color? color;
+
+  const _ProfileMenuItem({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
@@ -209,8 +277,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           child: Icon(icon, color: color ?? AppColors.primary, size: 20),
         ),
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.w600, color: color, fontSize: 15)),
-        trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.grey, size: 20),
+        title: Text(title,
+            style: TextStyle(
+                fontWeight: FontWeight.w600, color: color, fontSize: 15)),
+        trailing: const Icon(Icons.chevron_right_rounded,
+            color: AppColors.grey, size: 20),
       ),
     );
   }

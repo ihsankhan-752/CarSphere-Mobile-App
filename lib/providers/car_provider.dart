@@ -19,10 +19,6 @@ class CarProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  CarProvider() {
-    fetchListings();
-  }
-
   Future<void> fetchListings({Map<String, String>? filters}) async {
     _isLoading = true;
     _error = null;
@@ -40,33 +36,34 @@ class CarProvider extends ChangeNotifier {
   }
 
   Future<void> fetchMyListings(String userId) async {
-    // Note: This assumes the backend supports filtering by sellerId
     try {
-      _myListings = await _listingService.getListings(filters: {'sellerId': userId});
+      _myListings = await _listingService
+          .getListings(filters: {'sellerId': userId});
       notifyListeners();
-    } catch (e) {
-      print('DEBUG: Error fetching my listings: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> fetchFavorites(String token) async {
     try {
       _favorites = await _favoriteService.getFavorites(token);
       notifyListeners();
-    } catch (e) {
-      print('DEBUG: Error fetching favorites: $e');
-    }
+    } catch (_) {}
   }
 
-  Future<bool> addListing(Map<String, dynamic> data, String token, {List<XFile>? images}) async {
+  Future<bool> addListing(
+    Map<String, dynamic> data,
+    String token, {
+    List<XFile>? images,
+  }) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final newListing = await _listingService.createListing(data, token, images: images);
+      final newListing =
+          await _listingService.createListing(data, token, images: images);
       _listings.insert(0, newListing);
-      _myListings.insert(0, newListing); // Also add to my listings
+      _myListings.insert(0, newListing);
       _isLoading = false;
       notifyListeners();
       return true;
@@ -84,10 +81,10 @@ class CarProvider extends ChangeNotifier {
 
   Future<void> toggleFavorite(String listingId, String token) async {
     try {
-      final favoriteIndex = _favorites.indexWhere((l) => l.id == listingId);
-      
+      final favoriteIndex =
+          _favorites.indexWhere((l) => l.id == listingId);
+
       if (favoriteIndex != -1) {
-        // Remove from favorites
         final favoriteId = _favorites[favoriteIndex].favoriteId;
         if (favoriteId != null) {
           await _favoriteService.removeFavorite(favoriteId, token);
@@ -97,12 +94,10 @@ class CarProvider extends ChangeNotifier {
           await fetchFavorites(token);
         }
       } else {
-        // Add to favorites
         await _favoriteService.addFavorite(listingId, token);
         await fetchFavorites(token);
       }
-    } catch (e) {
-      print('DEBUG: Error toggling favorite: $e');
+    } catch (_) {
       await fetchFavorites(token);
     }
   }

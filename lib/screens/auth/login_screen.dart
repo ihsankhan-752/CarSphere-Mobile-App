@@ -72,7 +72,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       icon: Icons.person_outline,
                     ),
                   ),
-
                   const SizedBox(width: 15),
                   Expanded(
                     child: RoleButton(
@@ -85,14 +84,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               SizedBox(height: 20),
-
               AuthTextInput(
                 controller: _emailController,
                 label: "Email",
                 hint: "name@gmail.com",
                 icon: Icons.email_outlined,
               ),
-
               const SizedBox(height: 20),
               AuthTextInput(
                 controller: _passwordController,
@@ -101,7 +98,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 icon: Icons.lock_outline,
                 isPassword: true,
               ),
-
               const SizedBox(height: 10),
               Align(
                 alignment: Alignment.centerRight,
@@ -116,16 +112,6 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
               Consumer<AuthProvider>(
                 builder: (context, auth, _) {
-                  if (auth.error != null) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      showCustomMsg(
-                        context: context,
-                        msg: auth.error!,
-                        bgColor: Colors.red,
-                      );
-                    });
-                  }
-
                   return PrimaryButton(
                     title: auth.isLoading ? "Please Wait...." : "Login",
                     onPressed: auth.isLoading
@@ -144,6 +130,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   context,
                                   AppRoutes.home,
                                 );
+                              } else {
+                                if (auth.error != null) {
+                                  showCustomMsg(
+                                    context: context,
+                                    msg: auth.error!,
+                                    bgColor: Colors.red,
+                                  );
+                                }
                               }
                             }
                           },
@@ -151,7 +145,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
               ),
               const SizedBox(height: 30),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
